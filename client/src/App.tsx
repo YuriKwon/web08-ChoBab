@@ -1,5 +1,14 @@
+import Toast from '@components/Toast';
+import Router from './Router';
+import '@styles/font.css';
+
 function App() {
-  return <div className="App"></div>;
+  return (
+    <>
+      <Toast />
+      <Router />
+    </>
+  );
 }
 
 export default App;

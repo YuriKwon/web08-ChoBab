@@ -1,0 +1,50 @@
+name: Auto Deployment
+
+on:
+  push:
+    # prod, release 브랜치에 push 시 작동
+    branches:
+      - prod
+      - release
+
+jobs:
+  # push 의 타겟 브랜치가 release 일 때 작동하는 job
+  deploy_release:
+    if: contains(github.ref, 'release')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: sshAction
+        # with 의 정보와 함께 원격 접속 수행
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.RELEASE_HOST }}
+          username: ${{ secrets.RELEASE_USERNAME }}
+          password: ${{ secrets.RELEASE_PASSWORD }}
+          script: |
+            cd chobab_release
+            git clean -fd
+            git checkout release
+            git pull origin release
+            sh script/client-deploy.sh
+            sh script/server-deploy.sh
+
+  # push 의 타겟 브랜치가 main 일 때 작동하는 job
+  deploy_prod:
+    if: contains(github.ref, 'prod')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: sshAction
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
+          script: |
+            cd chobab
+            git clean -fd
+            git checkout prod
+            git pull origin prod
+            sh script/client-deploy.sh
+            sh script/server-deploy.sh
